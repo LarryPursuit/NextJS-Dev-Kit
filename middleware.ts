@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import config from "./config";
-import { NextRequest } from "next/server";
 
 let clerkMiddleware: (arg0: (auth: any, req: any) => any) => {
     (arg0: any): any;
@@ -21,16 +20,7 @@ const isProtectedRoute = config.auth.enabled
   ? createRouteMatcher(["/dashboard(.*)"])
   : () => false;
 
-export default function middleware(req: NextRequest) {
-  // Allow public files to be accessed directly
-  if (
-    req.nextUrl.pathname.startsWith("/_next") ||
-    req.nextUrl.pathname.startsWith("/images/") ||
-    req.nextUrl.pathname.match(/\.(jpg|jpeg|png|gif|ico|svg)$/)
-  ) {
-    return NextResponse.next();
-  }
-
+export default function middleware(req: any) {
   if (config.auth.enabled) {
     return clerkMiddleware(async (auth, req) => {
       const resolvedAuth = await auth();
@@ -46,9 +36,9 @@ export default function middleware(req: NextRequest) {
   }
 }
 
-export const config = {
+export const middlewareConfig = {
   matcher: [
-    "/((?!_next/static|_next/image|images|favicon.ico).*)",
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     "/(api|trpc)(.*)",
   ],
 };
