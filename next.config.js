@@ -9,6 +9,10 @@ const nextConfig = {
         pathname: "/user_**/**",
       },
     ],
+    domains: ["images.unsplash.com"],
+  },
+  experimental: {
+    mdxRs: true,
   },
 };
 
