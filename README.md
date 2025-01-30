@@ -42,7 +42,7 @@ A modern, feature-rich starter template for building production-ready applicatio
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/LarryPursuit
+git clone https://github.com/LarryPursuit/NextJS-Dev-Kit?tab=readme-ov-file
 ```
 
 2. Install dependencies:
