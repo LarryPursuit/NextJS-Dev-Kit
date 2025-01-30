@@ -1,13 +1,44 @@
-import { authMiddleware } from "@clerk/nextjs";
+import { NextResponse } from "next/server";
+import config from "./config";
 
-export default authMiddleware({
-  // Routes that can be accessed while signed out
-  publicRoutes: ["/", "/blog(.*)"],
-  // Routes that can always be accessed, and have
-  // no authentication information
-  ignoredRoutes: ["/api/webhook/clerk"],
-});
+let clerkMiddleware: (arg0: (auth: any, req: any) => any) => {
+    (arg0: any): any;
+    new (): any;
+  },
+  createRouteMatcher;
 
-export const config = {
-  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
+if (config.auth.enabled) {
+  try {
+    ({ clerkMiddleware, createRouteMatcher } = require("@clerk/nextjs/server"));
+  } catch (error) {
+    console.warn("Clerk modules not available. Auth will be disabled.");
+    config.auth.enabled = false;
+  }
+}
+
+const isProtectedRoute = config.auth.enabled
+  ? createRouteMatcher(["/dashboard(.*)"])
+  : () => false;
+
+export default function middleware(req: any) {
+  if (config.auth.enabled) {
+    return clerkMiddleware(async (auth, req) => {
+      const resolvedAuth = await auth();
+
+      if (!resolvedAuth.userId && isProtectedRoute(req)) {
+        return resolvedAuth.redirectToSignIn();
+      } else {
+        return NextResponse.next();
+      }
+    })(req);
+  } else {
+    return NextResponse.next();
+  }
+}
+
+export const middlewareConfig = {
+  matcher: [
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/(api|trpc)(.*)",
+  ],
 };
